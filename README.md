@@ -1,3 +1,3 @@
 # Gerador de QRCode para rede Wi-Fi
 
-## HTML e Javascript
+## HTML, Javascript e TailwindCSS
