@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Wi-Fi Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+</head>
+
+<body>
+
+    <section
+        class=" bg-white dark:bg-gray-900 bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/hero-pattern.svg')] dark:bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/hero-pattern-dark.svg')]">
+        <div class=" mx-auto max-w-md text-center lg:py-16 z-10 relative">
+            <h1
+                class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+                QR Code Wi-Fi Generator
+            </h1>
+            <p class="mb-8 text-lg font-normal text-gray-500 lg:text-xl  dark:text-gray-200">
+                Informe os dados da sua rede e crie seu QR Code.
+            </p>
+
+            <div class="mb-5">
+
+                <input type="text"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="SSID (Nome da Rede):" id="ssid" required>
+            </div>
+            <div class="mb-5">
+
+                <input type="text" id="senha"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Senha" required>
+            </div>
+            <div class="mb-5">
+                <input type="text" id="txt"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Texto (opcional)" required>
+            </div>
+            <button type="button"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                onclick="gerarQRCode()" data-drawer-target="drawer-example" data-drawer-show="drawer-example"
+                aria-controls="drawer-example">Gerar QR Code</button>
+
+
+            <div class="flex py-5 justify-center items-center">
+                <div
+                    class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                    <div id="qrcode-container">
+                        <div id="qrcode"></div>
+                        <div id="texto"
+                            style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 14px; color: #000;">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button"
+                class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
+                onclick="downloadQRCode()">Download QR Code</button>
+
+        </div>
+    </section>
+
+    <script>
+        function gerarQRCode() {
+            const ssid = document.getElementById('ssid').value;
+            const senha = document.getElementById('senha').value;
+            const textoAdicional = document.getElementById('txt').value;
+
+            // Verifica se a senha atende aos requisitos WPA/WPA2
+            if (!senha || senha.length < 8) {
+                alert('A senha deve ter pelo menos 8 caracteres.');
+                return;
+            }
+
+            const dadosWifi = `WIFI:T:WPA;S:${ssid};P:${senha};;`;
+
+            const qrcode = new QRCode(document.getElementById('qrcode'), {
+                text: dadosWifi,
+                width: 512,
+                height: 512
+            });
+            const textoElemento = document.getElementById('texto');
+            textoElemento.innerText = textoAdicional;
+        }
+        function downloadQRCode() {
+            const container = document.getElementById('qrcode-container');
+            const canvas = container.getElementsByTagName('canvas')[0];
+            const texto = document.getElementById('texto');
+
+            // Cria um novo canvas que inclui o texto
+            const novoCanvas = document.createElement('canvas');
+            novoCanvas.width = canvas.width;
+            novoCanvas.height = canvas.height + texto.offsetHeight;
+
+            const contexto = novoCanvas.getContext('2d');
+            contexto.drawImage(canvas, 0, 0);
+            contexto.fillStyle = '#000';
+            contexto.fillRect(0, canvas.height, canvas.width, texto.offsetHeight);
+            contexto.font = '14px Segoe UI';
+            contexto.fillStyle = '#fff';
+            contexto.textAlign = 'center';
+            contexto.fillText(texto.textContent, canvas.width / 2, canvas.height + texto.offsetHeight / 2);
+
+            // Obtém o URL da nova imagem
+            const url = novoCanvas.toDataURL('image/png');
+
+            // Cria um link para o download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'qrcode_wifi_com_texto.png';
+
+            // Adiciona o link ao documento e simula um clique
+            document.body.appendChild(link);
+            link.click();
+
+            // Remove o link do documento
+            document.body.removeChild(link);
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
+</body>
+
+</html>
